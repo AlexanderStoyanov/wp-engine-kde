@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+
+  <group name="General">
+    <entry name="SteamLibraryPath" type="Path">
+      <label>Path to the Steam library containing Wallpaper Engine</label>
+      <default></default>
+    </entry>
+    <entry name="WallpaperWorkShopId" type="String">
+      <label>Workshop ID of the selected wallpaper</label>
+      <default></default>
+    </entry>
+    <entry name="WallpaperSource" type="String">
+      <label>Full path to the wallpaper media file</label>
+      <default></default>
+    </entry>
+    <entry name="WallpaperType" type="String">
+      <label>Type of the selected wallpaper (video, scene, web)</label>
+      <default></default>
+    </entry>
+    <entry name="MuteAudio" type="Bool">
+      <label>Mute wallpaper audio</label>
+      <default>true</default>
+    </entry>
+    <entry name="Volume" type="Int">
+      <label>Audio volume percentage (0-100)</label>
+      <default>100</default>
+    </entry>
+    <entry name="FillMode" type="Int">
+      <label>Video fill mode (0=crop, 1=stretch, 2=fit, 3=center)</label>
+      <default>0</default>
+    </entry>
+    <entry name="PauseMode" type="Int">
+      <label>When to pause (0=never, 1=maximized, 2=fullscreen)</label>
+      <default>0</default>
+    </entry>
+    <entry name="Speed" type="Double">
+      <label>Playback speed multiplier</label>
+      <default>1.0</default>
+    </entry>
+  </group>
+</kcfg>
