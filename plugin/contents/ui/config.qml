@@ -19,6 +19,8 @@ ColumnLayout {
     property int cfg_FillMode
     property int cfg_PauseMode
     property real cfg_Speed
+    property int cfg_SceneFps
+    property string cfg_LweBinaryPath
 
     readonly property string workshopPath: {
         if (!cfg_SteamLibraryPath || cfg_SteamLibraryPath === "")
@@ -317,6 +319,31 @@ ColumnLayout {
                 textFromValue: function(value) { return (value / 100.0).toFixed(2) + "x" }
                 valueFromText: function(text) { return Math.round(parseFloat(text) * 100) }
             }
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: "Scene FPS:"
+            QQC2.SpinBox {
+                from: 0
+                to: 120
+                stepSize: 5
+                value: cfg_SceneFps
+                onValueModified: cfg_SceneFps = value
+
+                textFromValue: function(value) { return value === 0 ? "Unlimited" : value.toString() }
+                valueFromText: function(text) { return text === "Unlimited" ? 0 : parseInt(text) || 30 }
+            }
+            QQC2.Label {
+                text: "(0 = unlimited)"
+                opacity: 0.6
+            }
+        }
+
+        QQC2.TextField {
+            Kirigami.FormData.label: "Scene renderer:"
+            text: cfg_LweBinaryPath
+            placeholderText: "Auto-detect (searches ~/.local/bin, /usr/bin, PATH)"
+            onEditingFinished: cfg_LweBinaryPath = text
         }
     }
 }

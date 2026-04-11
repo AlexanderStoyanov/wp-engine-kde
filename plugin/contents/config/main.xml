@@ -42,5 +42,13 @@
       <label>Playback speed multiplier</label>
       <default>1.0</default>
     </entry>
+    <entry name="SceneFps" type="Int">
+      <label>Target FPS for scene wallpapers (0 = unlimited)</label>
+      <default>60</default>
+    </entry>
+    <entry name="LweBinaryPath" type="String">
+      <label>Path to linux-wallpaperengine binary (auto-detected if empty)</label>
+      <default></default>
+    </entry>
   </group>
 </kcfg>
