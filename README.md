@@ -13,7 +13,7 @@ A KDE Plasma 6 wallpaper plugin that plays **Wallpaper Engine** backgrounds (vid
 ## Quick start
 
 ```bash
-git clone https://github.com/YOUR_USER/wp-engine-kde.git
+git clone https://github.com/AlexanderStoyanov/wp-engine-kde.git
 cd wp-engine-kde
 bash install.sh
 ```
@@ -90,7 +90,7 @@ The upstream `linux-wallpaperengine` has two issues when used as a KDE wallpaper
 1. **Input capture**: The Wayland input region covers the full surface, so `--disable-mouse` doesn't make the surface click-through — desktop right-click menus are blocked.
 2. **Layer stacking**: It uses the `BACKGROUND` layer-shell layer, which KWin places *below* the Plasma desktop surface. After any desktop interaction the wallpaper gets covered.
 
-A [PR has been submitted upstream](https://github.com/Almamu/linux-wallpaperengine/pull/TBD). Until merged, this repo includes a patch (`patches/lwe-kde-compat.patch`) that `build-lwe.sh` applies automatically.
+A [PR has been submitted upstream](https://github.com/Almamu/linux-wallpaperengine/pull/528). Until merged, this repo includes a patch (`patches/lwe-kde-compat.patch`) that `build-lwe.sh` applies automatically.
 
 To apply manually:
 
@@ -122,10 +122,10 @@ pkill -u $USER -f "linux-wallpaperengine.*--screen-root"
 ## Uninstalling
 
 ```bash
-kpackagetool6 -t Plasma/Wallpaper -r com.github.wpEngineKde
-pkill -u $USER -f "linux-wallpaperengine.*--screen-root"
-systemctl --user restart plasma-plasmashell.service
+bash uninstall.sh
 ```
+
+This stops all renderer processes, cleans up PID/log files, removes the plugin, and restarts Plasma. It will also list optional manual steps for removing the native binary and build container.
 
 ## Architecture
 
