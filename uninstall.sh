@@ -32,16 +32,43 @@ else
     ok "Plugin was not installed."
 fi
 
-# 4. Restart Plasma
+# 4. Remove native binary and bundled libraries
+if [[ -x "$HOME/.local/bin/linux-wallpaperengine" ]]; then
+    echo ""
+    read -r -p "  Remove ~/.local/bin/linux-wallpaperengine? [y/N] " answer
+    if [[ "${answer,,}" == "y" ]]; then
+        rm -f "$HOME/.local/bin/linux-wallpaperengine"
+        ok "Native wrapper removed."
+    fi
+fi
+
+if [[ -d "$HOME/.local/lib/linux-wallpaperengine" ]]; then
+    read -r -p "  Remove ~/.local/lib/linux-wallpaperengine/ (bundled libs)? [y/N] " answer
+    if [[ "${answer,,}" == "y" ]]; then
+        rm -rf "$HOME/.local/lib/linux-wallpaperengine"
+        ok "Bundled libraries removed."
+    fi
+fi
+
+# 5. Remove build container
+if command -v distrobox &>/dev/null; then
+    for container in lwe-build lwe-dev; do
+        if distrobox list 2>/dev/null | grep -q "$container"; then
+            read -r -p "  Remove distrobox container '$container'? [y/N] " answer
+            if [[ "${answer,,}" == "y" ]]; then
+                distrobox rm "$container" --force 2>/dev/null
+                ok "Container '$container' removed."
+            fi
+        fi
+    done
+fi
+
+# 6. Restart Plasma
+echo ""
 info "Restarting Plasma …"
 systemctl --user restart plasma-plasmashell.service 2>/dev/null && ok "Plasma restarted." || warn "Could not restart Plasma. Log out/in to complete removal."
 
 echo ""
 echo "  ───────────────────────────────────────"
-echo "  Plugin uninstalled."
-echo ""
-echo "  Optional manual cleanup:"
-echo "    rm ~/.local/bin/linux-wallpaperengine       # Native wrapper"
-echo "    rm -rf ~/.local/lib/linux-wallpaperengine/  # Bundled libraries"
-echo "    distrobox rm lwe-build                      # Build container"
+echo "  Uninstall complete."
 echo ""

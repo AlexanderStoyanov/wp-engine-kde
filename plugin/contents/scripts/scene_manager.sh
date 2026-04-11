@@ -161,7 +161,7 @@ start_scene() {
     if [[ "$muted" == "true" ]]; then
         audio_args=(--silent)
     else
-        audio_args=(--volume "$volume")
+        audio_args=(--noautomute --volume "$volume")
     fi
 
     local scaling_args=()
