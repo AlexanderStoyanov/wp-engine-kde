@@ -45,6 +45,15 @@ WallpaperItem {
         if (screenName !== "" && wpType === "scene" && !sceneRunning)
             loadWallpaper()
     }
+    onSceneFpsChanged: restartSceneIfRunning()
+    onFillModeChanged: restartSceneIfRunning()
+    onMutedChanged: restartSceneIfRunning()
+    onVolChanged: restartSceneIfRunning()
+
+    function restartSceneIfRunning() {
+        if (wpType === "scene" && sceneRunning)
+            startScene()
+    }
 
     P5Support.DataSource {
         id: sceneExec
@@ -146,7 +155,8 @@ WallpaperItem {
     function startScene() {
         if (wpWorkshopId === "" || assetsDir === "") return
 
-        var sceneKey = wpWorkshopId + ":" + screenName + ":" + sceneFps
+        var scalingMode = ["fill", "stretch", "fit"][fillMode] || "fill"
+        var sceneKey = wpWorkshopId + ":" + screenName + ":" + sceneFps + ":" + muted + ":" + vol + ":" + fillMode
         if (sceneRunning && activeSceneId === sceneKey) return
 
         var screen = screenName
@@ -156,8 +166,8 @@ WallpaperItem {
         }
 
         activeSceneId = sceneKey
-        var lweArg = lweBinary !== "" ? (' "' + lweBinary + '"') : ""
-        var cmd = 'bash "' + sceneManagerPath + '" start "' + wpWorkshopId + '" "' + assetsDir + '" ' + sceneFps + ' "' + screen + '"' + lweArg
+        var lweArg = lweBinary !== "" ? ' "' + lweBinary + '"' : ' ""'
+        var cmd = 'bash "' + sceneManagerPath + '" start "' + wpWorkshopId + '" "' + assetsDir + '" ' + sceneFps + ' "' + screen + '"' + lweArg + ' ' + muted + ' ' + vol + ' ' + scalingMode
         sceneExec.connectSource(cmd)
     }
 

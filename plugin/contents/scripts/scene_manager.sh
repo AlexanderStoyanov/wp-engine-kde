@@ -130,6 +130,9 @@ start_scene() {
     local fps="${3:-60}"
     local screen="$4"
     local custom_binary="${5:-}"
+    local muted="${6:-true}"
+    local volume="${7:-100}"
+    local scaling="${8:-}"
 
     stop_screen "$screen"
 
@@ -154,6 +157,18 @@ start_scene() {
         fps_args=(--fps "$fps")
     fi
 
+    local audio_args=()
+    if [[ "$muted" == "true" ]]; then
+        audio_args=(--silent)
+    else
+        audio_args=(--volume "$volume")
+    fi
+
+    local scaling_args=()
+    if [[ -n "$scaling" && "$scaling" != "default" ]]; then
+        scaling_args=(--scaling "$scaling")
+    fi
+
     local logfile
     logfile=$(logfile_for "$screen")
 
@@ -161,6 +176,8 @@ start_scene() {
         --assets-dir "$assets_dir" \
         --disable-mouse \
         "${fps_args[@]}" \
+        "${audio_args[@]}" \
+        "${scaling_args[@]}" \
         --screen-root "$screen" \
         "$workshop_id"
 
@@ -223,7 +240,10 @@ case "${1:-}" in
             "${3:?assets_dir required}" \
             "${4:-60}" \
             "${5:?screen_name required}" \
-            "${6:-}"
+            "${6:-}" \
+            "${7:-true}" \
+            "${8:-100}" \
+            "${9:-}"
         ;;
     stop)
         if [[ -n "${2:-}" ]]; then

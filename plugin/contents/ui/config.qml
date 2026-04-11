@@ -86,6 +86,15 @@ ColumnLayout {
 
     function applyFilter() {
         filteredModel.clear()
+        filteredModel.append({
+            workshopId: "",
+            title: "None",
+            wpType: "",
+            preview: "",
+            filePath: "",
+            description: "",
+            tags: ""
+        })
         var query = searchQuery.toLowerCase()
         for (var i = 0; i < wallpaperModel.count; i++) {
             var wp = wallpaperModel.get(i)
@@ -196,7 +205,10 @@ ColumnLayout {
             required property string preview
             required property string filePath
 
-            readonly property bool isCurrent: workshopId === cfg_WallpaperWorkShopId
+            readonly property bool isNone: workshopId === "" && wpType === ""
+            readonly property bool isCurrent: isNone
+                ? cfg_WallpaperWorkShopId === ""
+                : workshopId === cfg_WallpaperWorkShopId
 
             Rectangle {
                 anchors.fill: parent
@@ -220,12 +232,21 @@ ColumnLayout {
 
                         Image {
                             anchors.fill: parent
-                            source: preview
+                            source: isNone ? "" : preview
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
+                            visible: !isNone
                         }
 
-                        // Type badge
+                        Kirigami.Icon {
+                            anchors.centerIn: parent
+                            width: Kirigami.Units.iconSizes.large
+                            height: Kirigami.Units.iconSizes.large
+                            source: "edit-none"
+                            visible: isNone
+                            color: Kirigami.Theme.disabledTextColor
+                        }
+
                         Rectangle {
                             anchors.top: parent.top
                             anchors.right: parent.right
@@ -235,6 +256,7 @@ ColumnLayout {
                             radius: 3
                             color: wpType === "video" ? "#2e7d32" : "#f57f17"
                             opacity: 0.85
+                            visible: !isNone
 
                             QQC2.Label {
                                 id: badgeLabel
@@ -264,83 +286,98 @@ ColumnLayout {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        cfg_WallpaperWorkShopId = workshopId
-                        cfg_WallpaperSource = filePath
-                        cfg_WallpaperType = wpType
+                        if (isNone || isCurrent) {
+                            cfg_WallpaperWorkShopId = ""
+                            cfg_WallpaperSource = ""
+                            cfg_WallpaperType = ""
+                        } else {
+                            cfg_WallpaperWorkShopId = workshopId
+                            cfg_WallpaperSource = filePath
+                            cfg_WallpaperType = wpType
+                        }
                     }
                 }
             }
         }
     }
 
-    // --- Playback settings ---
-    Kirigami.FormLayout {
+    // --- Playback settings (responsive flow) ---
+    Flow {
         Layout.fillWidth: true
+        spacing: Kirigami.Units.largeSpacing * 2
 
-        QQC2.ComboBox {
-            Kirigami.FormData.label: "Fill mode:"
-            model: ["Scaled and cropped", "Stretched", "Fit (keep proportions)"]
-            currentIndex: cfg_FillMode
-            onActivated: (index) => { cfg_FillMode = index }
-        }
-
-        QQC2.ComboBox {
-            Kirigami.FormData.label: "Pause when:"
-            model: ["Never pause", "Window maximized", "Window fullscreen"]
-            currentIndex: cfg_PauseMode
-            onActivated: (index) => { cfg_PauseMode = index }
-        }
-
-        RowLayout {
-            Kirigami.FormData.label: "Audio:"
-            QQC2.CheckBox {
-                text: "Mute"
-                checked: cfg_MuteAudio
-                onToggled: cfg_MuteAudio = checked
-            }
-            QQC2.SpinBox {
-                from: 0
-                to: 100
-                value: cfg_Volume
-                enabled: !cfg_MuteAudio
-                onValueModified: cfg_Volume = value
+        ColumnLayout {
+            spacing: 2
+            QQC2.Label { text: "Fill mode"; opacity: 0.7; font.pointSize: 8 }
+            QQC2.ComboBox {
+                model: ["Scaled and cropped", "Stretched", "Fit (keep proportions)"]
+                currentIndex: cfg_FillMode
+                onActivated: (index) => { cfg_FillMode = index }
             }
         }
 
-        RowLayout {
-            Kirigami.FormData.label: "Speed:"
+        ColumnLayout {
+            spacing: 2
+            QQC2.Label { text: "Pause when"; opacity: 0.7; font.pointSize: 8 }
+            QQC2.ComboBox {
+                model: ["Never pause", "Window maximized", "Window fullscreen"]
+                currentIndex: cfg_PauseMode
+                onActivated: (index) => { cfg_PauseMode = index }
+            }
+        }
+
+        ColumnLayout {
+            spacing: 2
+            QQC2.Label { text: "Audio"; opacity: 0.7; font.pointSize: 8 }
+            RowLayout {
+                QQC2.CheckBox {
+                    text: "Mute"
+                    checked: cfg_MuteAudio
+                    onToggled: cfg_MuteAudio = checked
+                }
+                QQC2.SpinBox {
+                    from: 0; to: 100
+                    value: cfg_Volume
+                    enabled: !cfg_MuteAudio
+                    onValueModified: cfg_Volume = value
+                }
+            }
+        }
+
+        ColumnLayout {
+            spacing: 2
+            QQC2.Label { text: "Speed"; opacity: 0.7; font.pointSize: 8 }
             QQC2.SpinBox {
-                from: 25
-                to: 200
-                stepSize: 25
+                from: 25; to: 200; stepSize: 25
                 value: Math.round(cfg_Speed * 100)
                 onValueModified: cfg_Speed = value / 100.0
-
                 textFromValue: function(value) { return (value / 100.0).toFixed(2) + "x" }
                 valueFromText: function(text) { return Math.round(parseFloat(text) * 100) }
             }
         }
 
-        RowLayout {
-            Kirigami.FormData.label: "Scene FPS:"
-            QQC2.SpinBox {
-                from: 0
-                to: 120
-                stepSize: 5
-                value: cfg_SceneFps
-                onValueModified: cfg_SceneFps = value
-
-                textFromValue: function(value) { return value === 0 ? "Unlimited" : value.toString() }
-                valueFromText: function(text) { return text === "Unlimited" ? 0 : parseInt(text) || 30 }
-            }
-            QQC2.Label {
-                text: "(0 = unlimited)"
-                opacity: 0.6
+        ColumnLayout {
+            spacing: 2
+            QQC2.Label { text: "Scene FPS"; opacity: 0.7; font.pointSize: 8 }
+            RowLayout {
+                QQC2.SpinBox {
+                    from: 0; to: 120; stepSize: 5
+                    value: cfg_SceneFps
+                    onValueModified: cfg_SceneFps = value
+                    textFromValue: function(value) { return value === 0 ? "Unlimited" : value.toString() }
+                    valueFromText: function(text) { return text === "Unlimited" ? 0 : parseInt(text) || 30 }
+                }
+                QQC2.Label { text: "0 = unlimited"; opacity: 0.5; font.pointSize: 8 }
             }
         }
+    }
 
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.smallSpacing
+        QQC2.Label { text: "Scene renderer:"; opacity: 0.7; font.pointSize: 8 }
         QQC2.TextField {
-            Kirigami.FormData.label: "Scene renderer:"
+            Layout.fillWidth: true
             text: cfg_LweBinaryPath
             placeholderText: "Auto-detect (searches ~/.local/bin, /usr/bin, PATH)"
             onEditingFinished: cfg_LweBinaryPath = text
