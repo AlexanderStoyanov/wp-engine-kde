@@ -51,14 +51,17 @@ find_lwe_binary() {
     return 1
 }
 
-# Build the launch command array. If the binary is a distrobox-exported wrapper,
-# use podman exec directly to avoid the FIFO-based distrobox-enter, which
-# deadlocks when multiple instances target the same container concurrently.
+# Build the launch command array.
+# Native wrappers (with LD_LIBRARY_PATH) are strongly preferred — they get
+# direct GPU access. Distrobox-exported wrappers fall back to podman exec
+# to avoid FIFO deadlocks, but lose GPU access (software rendering).
 build_launch_cmd() {
     local binary="$1"
     shift
 
     if [[ -f "$binary" ]] && head -3 "$binary" 2>/dev/null | grep -q "distrobox_binary"; then
+        echo "WARNING: $binary is a distrobox wrapper — GPU access may be unavailable (software rendering)." >&2
+        echo "WARNING: Rebuild with 'bash build-lwe.sh --force' for native GPU-accelerated execution." >&2
         local container_name inner_binary
         container_name=$(grep -oP '(?<=# name: ).*' "$binary" | head -1)
         inner_binary=$(grep -oP "(?<=')/[^']+linux-wallpaperengine[^']*(?=')" "$binary" | head -1)

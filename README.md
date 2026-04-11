@@ -45,7 +45,7 @@ If `distrobox` is available, the installer offers to build everything automatica
 bash build-lwe.sh
 ```
 
-This creates a distrobox container, installs build dependencies, clones the repo, applies the [KDE compatibility patch](#upstream-patch-for-linux-wallpaperengine), builds, and exports the binary to `~/.local/bin/`. Re-run with `--force` to rebuild.
+This creates a distrobox container, installs build dependencies, clones the repo, applies the [KDE compatibility patch](#upstream-patch-for-linux-wallpaperengine), builds, and installs a native wrapper to `~/.local/bin/`. The wrapper runs the binary directly on the host with bundled libraries — this is important for GPU-accelerated rendering (running through the container falls back to software rendering). Re-run with `--force` to rebuild.
 
 ### Arch Linux (AUR)
 
@@ -101,6 +101,8 @@ cd build && cmake --build . -j$(nproc)
 ```
 
 ## Troubleshooting
+
+**Scene wallpapers are choppy / high CPU** — the renderer may be software-rendering instead of using the GPU. Check with `nvidia-smi pmon -c 1` — you should see `linux-wallpaper` in the process list. If not, rebuild with `bash build-lwe.sh --force` to create a native wrapper (distrobox-exported wrappers don't have GPU access).
 
 **Scene wallpaper shows black screen** — check the log:
 
