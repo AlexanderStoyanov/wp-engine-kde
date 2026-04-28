@@ -12,7 +12,10 @@ ok()    { printf '\033[1;32m✓\033[0m %s\n' "$*"; }
 warn()  { printf '\033[1;33m!\033[0m %s\n' "$*"; }
 err()   { printf '\033[1;31m✗\033[0m %s\n' "$*" >&2; }
 
-detect_steam_library() {
+detect_steam_roots() {
+    local roots=()
+    local seen=()
+
     local candidates=(
         "$HOME/.local/share/Steam"
         "$HOME/.steam/steam"
@@ -20,19 +23,53 @@ detect_steam_library() {
         "$HOME/snap/steam/common/.local/share/Steam"
         "/usr/share/Steam"
     )
+
+    add_root() {
+        local p="$1"
+        [[ -d "$p/steamapps" ]] || return 1
+        p="$(cd "$p" && pwd -P)"
+        for s in "${seen[@]}"; do
+            [[ "$s" == "$p" ]] && return 1
+        done
+        seen+=("$p")
+        roots+=("$p")
+    }
+
     for p in "${candidates[@]}"; do
+        add_root "$p" 2>/dev/null || true
+    done
+
+    # Parse libraryfolders.vdf from known Steam roots to find additional libraries
+    for base in "${seen[@]}"; do
+        local vdf="$base/steamapps/libraryfolders.vdf"
+        [[ -f "$vdf" ]] || continue
+        while IFS= read -r line; do
+            if [[ "$line" =~ \"path\"[[:space:]]+\"(.+)\" ]]; then
+                add_root "${BASH_REMATCH[1]}" 2>/dev/null || true
+            fi
+        done < "$vdf"
+    done
+
+    if [[ ${#roots[@]} -eq 0 ]]; then
+        return 1
+    fi
+    printf '%s\n' "${roots[@]}"
+}
+
+detect_steam_library() {
+    local roots
+    roots="$(detect_steam_roots)" || return 1
+
+    # Prefer a library that actually contains Wallpaper Engine
+    while IFS= read -r p; do
         if [[ -d "$p/steamapps/common/wallpaper_engine" ]]; then
             echo "$p"
             return 0
         fi
-    done
-    for p in "${candidates[@]}"; do
-        if [[ -d "$p/steamapps" ]]; then
-            echo "$p"
-            return 0
-        fi
-    done
-    return 1
+    done <<< "$roots"
+
+    # Fall back to the first library that has steamapps
+    echo "$(head -1 <<< "$roots")"
 }
 
 find_lwe_binary() {
@@ -66,7 +103,7 @@ main_install() {
         ok "Plugin installed."
     fi
 
-    # 2. Detect Steam library
+    # 2. Detect Steam library (scans libraryfolders.vdf for external drives)
     echo ""
     if steam_path=$(detect_steam_library); then
         ok "Steam library found: $steam_path"
