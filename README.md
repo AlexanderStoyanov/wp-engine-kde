@@ -83,14 +83,12 @@ sudo cp output/linux-wallpaperengine /usr/local/bin/
 | Scene FPS | Target framerate for scene wallpapers (0 = unlimited) | 60 |
 | Scene renderer | Custom path to `linux-wallpaperengine` binary | Auto-detect |
 
-## Upstream patch for linux-wallpaperengine
+## Upstream patches for linux-wallpaperengine
 
-The upstream `linux-wallpaperengine` has two issues when used as a KDE wallpaper:
+We maintain a [fork](https://github.com/AlexanderStoyanov/linux-wallpaperengine) with fixes submitted as individual PRs:
 
-1. **Input capture**: The Wayland input region covers the full surface, so `--disable-mouse` doesn't make the surface click-through — desktop right-click menus are blocked.
-2. **Layer stacking**: It uses the `BACKGROUND` layer-shell layer, which KWin places *below* the Plasma desktop surface. After any desktop interaction the wallpaper gets covered.
-
-A [PR has been submitted upstream](https://github.com/Almamu/linux-wallpaperengine/pull/528). Until merged, this repo includes a patch (`patches/lwe-kde-compat.patch`) that `build-lwe.sh` applies automatically.
+1. **Wayland KDE compat** ([PR #528](https://github.com/Almamu/linux-wallpaperengine/pull/528)) — click-through input region + BOTTOM layer for KDE Plasma compatibility. Applied automatically by `build-lwe.sh` via `patches/lwe-kde-compat.patch`.
+2. **Shader compilation fixes** — `#require` module resolution, HLSL `log10` macro conflict, implicit vector truncation. These fix gray/black scenes for ~30 wallpapers. See [SHADER_FIXES.md](SHADER_FIXES.md) for details, e2e test results, and the fix/test pipeline.
 
 To apply manually:
 
