@@ -165,9 +165,18 @@ WallpaperItem {
             screen = "unknown"
         }
 
+        // LWE only searches $HOME-relative Steam paths for workshop content.
+        // When the Steam library is on a non-default path (e.g. an external
+        // drive), pass the full workshop directory so LWE can find it.
+        var bgArg = wpWorkshopId
+        if (steamLibrary !== "") {
+            var workshopDir = steamLibrary + "/steamapps/workshop/content/431960/" + wpWorkshopId
+            bgArg = workshopDir
+        }
+
         activeSceneId = sceneKey
         var lweArg = lweBinary !== "" ? ' "' + lweBinary + '"' : ' ""'
-        var cmd = 'bash "' + sceneManagerPath + '" start "' + wpWorkshopId + '" "' + assetsDir + '" ' + sceneFps + ' "' + screen + '"' + lweArg + ' ' + muted + ' ' + vol + ' ' + scalingMode
+        var cmd = 'bash "' + sceneManagerPath + '" start "' + bgArg + '" "' + assetsDir + '" ' + sceneFps + ' "' + screen + '"' + lweArg + ' ' + muted + ' ' + vol + ' ' + scalingMode
         sceneExec.connectSource(cmd)
     }
 
